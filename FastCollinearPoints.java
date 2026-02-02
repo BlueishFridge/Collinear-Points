@@ -1,13 +1,18 @@
+import java.lang.Math;
 import java.util.Arrays;
 import java.util.Arrays.*;
+import java.util.Comparator;
 
-public class BruteCollinearPoints {
+public class FastCollinearPoints {
 
     private final Point[] points;
     private LineSegment[] segs;
     private int count;
+    int AddBuffer = 1; // needed to check if theres a spot to add a segment
+    int segLength = 1; //points.length/4; // chosen since line is four so assume worst case that each point falls in a 4 segement
+
     // finds all line segments containing 4 points
-    public BruteCollinearPoints(Point[] points) {
+    public FastCollinearPoints(Point[] points) {
 
         // Check all exceptions
         if (points == null) throw new IllegalArgumentException("Points is null");
@@ -16,47 +21,40 @@ public class BruteCollinearPoints {
         }
         if (Arrays.stream(points).distinct().count() != points.length) throw new IllegalArgumentException("Duplicate points");
 
-
-        int AddBuffer = 1; // needed to check if theres a spot to add a segment
-        int segLength = 1; //points.length/4; // chosen since line is four so assume worst case that each point falls in a 4 segement
         this.points = points;
         this.count = 0;
         this.segs = new LineSegment[points.length];
 
-//        Arrays.sort(points);
+        Arrays.sort(points);
 
-        for (int i = 0; i< points.length; i++) {
-            for (int j = i+1; j < points.length; j++) {
-                for (int k = j+1; k < points.length;k++) {
-                    for (int l = k+1; l < points.length; l++) {
-                        double slope1,slope2,slope3 = 0;
-                        slope1 = points[i].slopeTo(points[j]);
-                        slope2 = points[i].slopeTo(points[k]);
-                        slope3 = points[i].slopeTo(points[l]);
+        for (int i = 0; i < points.length; i++) {
 
-                        if (slope1 == slope2 && slope1 == slope3) {
-                            segs = checkArray(segs);
-                            System.out.println(segs[count]);
-                            segs[count++] = new LineSegment(points[i],points[l]);
-                        }
-                    }
+            Comparator<Point> comp = points[i].slopeOrder();
+            Point[] tmp = Arrays.copyOfRange(points, i, points.length);
+            Arrays.sort(tmp, comp);
+
+            for (int j = 0; j< tmp.length; j++){
+                int k = j+1;
+                int l = k+1;
+                if (Math.abs(tmp[j].slopeTo(points[i])) == Math.abs(tmp[k].slopeTo(points[i])) && Math.abs(tmp[j].slopeTo(points[i])) == Math.abs(tmp[l].slopeTo(points[i]))) {
+                    segs = checkArray(segs);
+                    Point[] extremes = points[i].findExtremes( tmp[j], tmp[k], tmp[l]);
+                    segs[count++] = new LineSegment(extremes[0], extremes[1]);
                 }
-
             }
         }
-
-
     }
 
     // the number of line segments
     public int numberOfSegments() {
         return this.count;
+
     }
 
     private LineSegment[] checkArray(LineSegment[] segs){
         int AddBuffer = 1;
         int segLength = points.length;
-        if (segs.length - count <= AddBuffer ) {
+        if (segs.length - count <= AddBuffer ){
             // Use Arrays.copyOf() to create a new array and copy all elements
             segs = Arrays.copyOf(segs, segs.length+segLength);
         }
@@ -68,3 +66,4 @@ public class BruteCollinearPoints {
         return this.segs;
     }
 }
+

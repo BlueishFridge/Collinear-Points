@@ -1,12 +1,14 @@
 import java.util.Comparator;
 import java.util.Arrays;
 import edu.princeton.cs.algs4.StdDraw;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.random.RandomGenerator;
 
 public class Point implements Comparable<Point> {
 
-    private int x;     // x-coordinate of this point
-    private int y;     // y-coordinate of this point
+    int x;     // x-coordinate of this point
+    int y;     // y-coordinate of this point
 
     /**
      * Initializes a new point.
@@ -34,9 +36,24 @@ public class Point implements Comparable<Point> {
      *
      * @param that the other point
      */
-    public void drawTo(Point that) {
+    public void drawTo(@NotNull Point that) {
         /* DO NOT MODIFY */
         StdDraw.line(this.x, this.y, that.x, that.y);
+    }
+    public Point[] findExtremes(Point point2, Point point3, Point point4) {
+        Point min = this;
+        Point max = this;
+        Point[] extremes = {min,max};
+        if (point2.x > max.x) max = point2;
+        else if (point2.x < min.x) min = point2;
+
+        if (point3.x > max.x) max = point3;
+        else if (point3.x < min.x) min = point3;
+
+        if (point4.x > max.x) max = point4;
+        else if (point4.x < min.x) min = point4;
+
+        return extremes;
     }
 
     /**
@@ -84,6 +101,7 @@ public class Point implements Comparable<Point> {
         else return 1;
     }
 
+
     /**
      * Compares two points by the slope they make with this point.
      * The slope is defined as in the slopeTo() method.
@@ -127,10 +145,18 @@ public class Point implements Comparable<Point> {
             int y = 2 * i + 3;
             points[i] = new Point(x, y);
         }
+        Arrays.sort(points);
+        Comparator<Point> comp = points[0].slopeOrder();
+        Point[] tmp = Arrays.copyOfRange(points, 1, points.length);
+        System.out.println("The origin is " + points[0]);
+        System.out.println("points array " + Arrays.toString(points));
+        System.out.println("tmp array " + Arrays.toString(tmp));
+        Arrays.sort(tmp, comp);
 
-        System.out.println("The origin is " + origin);
-        System.out.println(Arrays.toString(points));
-        System.out.println(points[2].slopeTo(points[0]));
+        System.out.println(Arrays.toString(tmp));
+
+
+        for (Point point: tmp) System.out.println(points[0].slopeTo(point));
 
         BruteCollinearPoints bcp = new BruteCollinearPoints(points);
         System.out.println(bcp.numberOfSegments());
